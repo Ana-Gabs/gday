@@ -59,7 +59,7 @@ const usuarioSchema = new mongoose.Schema({
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 //////////////////Suscripcion/////////////////////////////////////
-app.post('/subscriones/suscripciones', async (req, res) => {
+app.post('/subscripciones/suscripciones', async (req, res) => {
   try {
       console.log('Datos recibidos:', req.body);
 

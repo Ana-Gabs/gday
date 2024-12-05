@@ -7,10 +7,9 @@ const { spawn } = require('child_process');
 const cors = require('cors');
 
 dotenv.config();
-
 const app = express();
-app.use(cors()); // Middleware CORS
-app.use(express.json()); // Middleware para parsear JSON
+app.use(cors()); 
+app.use(express.json()); 
 
 
 function startMicroservice(name, scriptPath) {
