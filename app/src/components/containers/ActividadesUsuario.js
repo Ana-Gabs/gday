@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {WEBSERVICE_IP} from '../../functions/roots/webserviceIP';
+import { WEBSERVICE_IP } from '../../functions/roots/webserviceIP';
 import {
   Box, Grid, Typography, Button, Accordion, AccordionSummary, AccordionDetails,
   IconButton, Chip, LinearProgress, Checkbox, FormControlLabel,
@@ -12,10 +12,12 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 const ActividadesUsuario = () => {
   const [actividades, setActividades] = useState([]);
   const [tipo, setTipo] = useState('nocompletadas'); // Por defecto: 'No Completadas'
+  const [loading, setLoading] = useState(false); // Para mostrar el estado de carga
   const usuarioId = sessionStorage.getItem('usuarioId');
 
   const fetchActividades = async (tipo) => {
     try {
+      setLoading(true);
       const url = `${WEBSERVICE_IP}/actividades/${tipo}/${usuarioId}`;
       const response = await fetch(url);
       const data = await response.json();
@@ -27,6 +29,8 @@ const ActividadesUsuario = () => {
       }
     } catch (error) {
       console.error('Error al obtener las actividades:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,32 +53,56 @@ const ActividadesUsuario = () => {
     }
   };
 
-  const handleCheckboxChange = async (actividadId, isChecked) => {
-    try {
-      const endpoint = isChecked
-        ? `${WEBSERVICE_IP}/actividades/terminar/${actividadId}`
-        : `${WEBSERVICE_IP}/actividades/pendiente/${actividadId}`;
+const handleCheckboxChange = async (actividadId, isChecked) => {
+  // Optimización: cambiar el estado localmente antes de realizar la llamada
+  const updatedActividades = actividades.map((actividad) =>
+    actividad._id === actividadId
+      ? { ...actividad, estado: isChecked ? 'Terminada' : 'Pendiente' }
+      : actividad
+  );
+  
+  setActividades(updatedActividades);
 
-      const response = await fetch(endpoint, {
-        method: 'PUT',
-      });
+  try {
+    const endpoint = isChecked
+      ? `${WEBSERVICE_IP}/actividades/terminar/${actividadId}`
+      : `${WEBSERVICE_IP}/actividades/pendiente/${actividadId}`;
 
-      if (response.ok) {
-        const updatedActividad = await response.json(); // Actividad actualizada desde el servidor
+    const response = await fetch(endpoint, {
+      method: 'PUT',
+    });
 
-        // Actualizar la lista local de actividades con los datos más recientes
+    if (response.ok) {
+      // Si la actividad se marca como "terminada" y el servidor lo confirma, eliminamos la actividad de la lista
+      if (isChecked) {
         setActividades((prevActividades) =>
-          prevActividades.map((actividad) =>
-            actividad._id === actividadId ? { ...actividad, ...updatedActividad.actividad } : actividad
-          )
+          prevActividades.filter((actividad) => actividad._id !== actividadId)
         );
-      } else {
-        console.error('Error al actualizar la actividad:', await response.text());
       }
-    } catch (error) {
-      console.error('Error al manejar el cambio de checkbox:', error);
+    } else {
+      console.error('Error al actualizar la actividad:', await response.text());
+      // Si ocurre un error, revertir el cambio local
+      setActividades((prevActividades) =>
+        prevActividades.map((actividad) =>
+          actividad._id === actividadId
+            ? { ...actividad, estado: isChecked ? 'Pendiente' : 'Terminada' }
+            : actividad
+        )
+      );
     }
-  };
+  } catch (error) {
+    console.error('Error al manejar el cambio de checkbox:', error);
+    // Si ocurre un error, revertir el cambio local
+    setActividades((prevActividades) =>
+      prevActividades.map((actividad) =>
+        actividad._id === actividadId
+          ? { ...actividad, estado: isChecked ? 'Pendiente' : 'Terminada' }
+          : actividad
+      )
+    );
+  }
+};
+
 
   const getChipColor = (value) => {
     switch (value) {
@@ -153,6 +181,9 @@ const ActividadesUsuario = () => {
           Terminadas
         </Button>
       </Box>
+
+      {/* Indicador de carga */}
+      {loading && <LinearProgress />}
 
       {/* Actividades */}
       {actividades.length === 0 ? (

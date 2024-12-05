@@ -4,11 +4,14 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScal
 import { Doughnut, Bar } from 'react-chartjs-2';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import useNotifications from '../functions/hooks/useNotifications';
 
 // Registrando componentes de Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const Resportes = () => {
+  const usuarioId = sessionStorage.getItem('usuarioId');
+  useNotifications(usuarioId);
   // Datos para la gráfica de pastel
   const dataDoughnut = {
     labels: ['Ventas', 'Suscripciones', 'Consultas'],

@@ -41,8 +41,22 @@ mongoose.connect(process.env.MONGO_URI)
     fechaFin: { type: Date, required: true },
     activa: { type: Boolean, required: true },
 });
-
 const Suscripcion = mongoose.model('Suscripcion', SuscripcionSchema);
+
+const usuarioSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  app: { type: String, required: true },
+  apm: { type: String, required: true },
+  telefono: { type: String, required: true },
+  correo: { type: String, required: true },
+  contrasena: { type: String, required: true },
+  tipo: { type: String, default: '1' },
+  fechaRegistro: { type: Date, default: Date.now },
+  verificado: { type: Boolean, default: false }, // Estado de verificación
+  verificationToken: String,                     // Token de verificación
+  tokenExpiracion: Date
+});
+const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 //////////////////Suscripcion/////////////////////////////////////
 app.post('/subscriones/suscripciones', async (req, res) => {
@@ -73,7 +87,7 @@ app.post('/subscriones/suscripciones', async (req, res) => {
   }
 });
 
-app.get('suscripciones//suscripcion/:usuarioId', async (req, res) => {
+app.get('/subscripciones/suscripcion/:usuarioId', async (req, res) => {
   try {
     const { usuarioId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(usuarioId)) {
@@ -107,7 +121,7 @@ app.get('suscripciones//suscripcion/:usuarioId', async (req, res) => {
 });
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-app.post('/enviar-correo-suscripcion', async (req, res) => {
+app.post('/subscripciones/enviar-correo-suscripcion', async (req, res) => {
   const { usuarioId } = req.body;
 
   if (!usuarioId) {

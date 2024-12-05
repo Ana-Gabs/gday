@@ -58,59 +58,53 @@ const Usuario = mongoose.model('Usuario', usuarioSchema);
 
 app.get('/usuario/:id', async (req, res) => {
   const { id } = req.params;
-
   if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'ID de usuario inválido.' });
+    return res.status(400).json({ message: 'ID de usuario inválido.' });
   }
 
   try {
-      const usuario = await Usuario.findById(id);
-      if (usuario) {
-          // No es seguro enviar el hash de contraseña en una respuesta
-          const { contrasena, ...datosUsuario } = usuario.toObject(); // Excluir la contraseña
-          res.json(datosUsuario); // Enviar solo los datos relevantes
-      } else {
-          res.status(404).json({ message: 'Usuario no encontrado.' });
-      }
+    const usuario = await Usuario.findById(id);  // Buscar usuario en la base de datos
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
+
+    const { contrasena, ...datosUsuario } = usuario.toObject();  // Excluir contraseña de la respuesta
+    return res.status(200).json(datosUsuario);  // Responder con los datos del usuario
   } catch (error) {
-      console.error('Error obteniendo el usuario por ID:', error);
-      res.status(500).json({ message: `Error obteniendo el usuario: ${error.message}` });
+    console.error('Error obteniendo el usuario por ID:', error);
+    return res.status(500).json({ message: 'Error interno del servidor.', error: error.message });
   }
 });
 
+
 app.put('/usuario/actualizar/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, app, apm, correo, contrasena } = req.body;
-
+  const { nombre, app, apm, correo, telefono } = req.body; // Agregar teléfono
   if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'ID de usuario inválido.' });
+    return res.status(400).json({ message: 'ID de usuario inválido.' });
   }
-
   try {
-      // Si la contraseña fue cambiada, se debe cifrar antes de guardar
-      let hashedContrasena = contrasena;
-      if (contrasena) {
-          hashedContrasena = await bcrypt.hash(contrasena, 10);
-      }
+    const usuarioActualizado = await Usuario.findByIdAndUpdate(
+      id,
+      {
+        nombre,
+        app,
+        apm,
+        correo,
+        telefono, // Actualizar el campo teléfono
+      },
+      { new: true }
+    );
 
-      const usuarioActualizado = await Usuario.findByIdAndUpdate(id, {
-          nombre,
-          app,
-          apm,
-          correo,
-          contrasena: hashedContrasena
-      }, { new: true });
-
-      if (usuarioActualizado) {
-          // Excluir la contraseña antes de enviar los datos al frontend
-          const { contrasena, ...datosUsuario } = usuarioActualizado.toObject();
-          res.json(datosUsuario);
-      } else {
-          res.status(404).json({ message: 'Usuario no encontrado.' });
-      }
+    if (usuarioActualizado) {
+      const { contrasena, ...datosUsuario } = usuarioActualizado.toObject();
+      res.json(datosUsuario);
+    } else {
+      res.status(404).json({ message: 'Usuario no encontrado.' });
+    }
   } catch (error) {
-      console.error('Error actualizando el usuario:', error);
-      res.status(500).json({ message: `Error actualizando el usuario: ${error.message}` });
+    console.error('Error actualizando el usuario:', error);
+    res.status(500).json({ message: `Error actualizando el usuario: ${error.message}` });
   }
 });
 

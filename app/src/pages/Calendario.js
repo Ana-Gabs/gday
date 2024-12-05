@@ -4,12 +4,12 @@ import Footer from '../components/Footer';
 import Header from '../components/Header';
 import CalendarioUsuario from '../components/containers/CalendarioUsuario';
 import Swal from 'sweetalert2';
-
+import useNotifications from '../functions/hooks/useNotifications';
 
 const Calendario = () => {
+  const usuarioId = sessionStorage.getItem('usuarioId');
+  useNotifications(usuarioId);
   const navigate = useNavigate();
-
-
   useEffect(() => {
   const isLoggedIn = sessionStorage.getItem('isLoggedIn');
   if (isLoggedIn !== 'true') {

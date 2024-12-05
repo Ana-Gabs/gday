@@ -71,11 +71,6 @@ app.get('/actividades/nocompletadas/:usuarioId', async (req, res) => {
             .sort({ fechaFin: 1 }) // Ordenar por fecha de fin más próxima (ascendente)
             .toArray();
 
-        // Verificar si no hay actividades encontradas
-        if (actividadesNoCompletadas.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron actividades no completadas' });
-        }
-
         // Responder con las actividades
         res.status(200).json(actividadesNoCompletadas);
 
@@ -100,10 +95,6 @@ app.get('/actividades/pendientes/:usuarioId', async (req, res) => {
             })
             .sort({ fechaFin: 1 })
             .toArray();
-
-        if (actividadesPendientes.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron actividades pendientes' });
-        }
 
         res.status(200).json(actividadesPendientes);
     } catch (error) {

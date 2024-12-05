@@ -37,7 +37,7 @@ const microservices = [
   { name: 'Usuarios', path: '../usuarios/index.js' },
   { name: 'Actividades', path: '../actividades/index.js' },
   { name: 'Notificaciones', path: '../notificaciones/index.js' },
-  //{ name: 'Reportes', path: '../reportes/index.js' },
+  { name: 'Reportes', path: '../reportes/index.js' },
   { name: 'Suscripciones', path: '../suscripciones/index.js' },
 ];
 
@@ -94,7 +94,6 @@ app.use('/actividades', async (req, res) => {
     }
   });
 
-  /*
   app.use('/reportes', async (req, res) => {
     try {
       const targetURL = `${process.env.REPORTES_SERVICE_URL}${req.originalUrl}`;
@@ -111,7 +110,6 @@ app.use('/actividades', async (req, res) => {
       res.status(error.response?.status || 500).json(error.response?.data || 'Error en el Gateway');
     }
   });
-  */
 
   app.use('/notificaciones', async (req, res) => {
     try {
